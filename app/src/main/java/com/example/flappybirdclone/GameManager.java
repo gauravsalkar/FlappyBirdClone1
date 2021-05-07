@@ -12,6 +12,9 @@ import android.view.SurfaceView;
 import com.example.flappybirdclone.sprites.Background;
 import com.example.flappybirdclone.sprites.Bird;
 
+/*
+** Game Engine
+ */
 public class GameManager extends SurfaceView implements SurfaceHolder.Callback {
 
     public MainThread thread;
