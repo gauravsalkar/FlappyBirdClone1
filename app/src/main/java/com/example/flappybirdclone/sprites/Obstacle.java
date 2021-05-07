@@ -9,6 +9,7 @@ import android.graphics.Rect;
 
 import com.example.flappybirdclone.R;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Obstacle implements Sprite {
@@ -16,18 +17,21 @@ public class Obstacle implements Sprite {
     private int height, width, separation, xPosition, speed, screenHeight, screenWidth, headHeight, headExtraWidth;
     private Bitmap image;
     private int obstacleMinPosition;
+    private ObstacleCallback callback;
 
-    public Obstacle(Resources resources, int screenHeight, int screenWidth) {
+    public Obstacle(Resources resources, int screenHeight, int screenWidth, ObstacleCallback callback) {
         image = BitmapFactory.decodeResource(resources, R.drawable.pipes);
         this.screenHeight = screenHeight;
         this.screenWidth = screenWidth;
+        this.callback = callback;
+        xPosition =screenWidth;
         width = (int) resources.getDimension(R.dimen.obstacle_width);
         speed = (int) resources.getDimension(R.dimen.obstacle_speed);
         separation = (int) resources.getDimension(R.dimen.obstacle_separation);
         headHeight = (int) resources.getDimension(R.dimen.head_height);
         headExtraWidth = (int) resources.getDimension(R.dimen.head_extra_width);
         obstacleMinPosition = (int) resources.getDimension(R.dimen.obstacle_min_position) ;
-        xPosition = 500;
+
 
         Random random = new Random(System.currentTimeMillis());
         height = random.nextInt(screenHeight - 2*obstacleMinPosition - separation) + obstacleMinPosition;
@@ -51,6 +55,16 @@ public class Obstacle implements Sprite {
 
     @Override
     public void update() {
-
+        xPosition -= speed;
+        if(xPosition <= 0 - width - 2*headExtraWidth) {
+            callback.obstacleOffScreen(this);
+        } else {
+            ArrayList<Rect> positions = new ArrayList<>();
+            Rect bottomPosition = new Rect(xPosition, screenHeight-height-headHeight,xPosition+width+2*headExtraWidth, screenHeight);
+            Rect topPosition = new Rect(xPosition, 0,xPosition+width+2*headExtraWidth, screenHeight-height-headHeight-separation);
+            positions.add(bottomPosition);
+            positions.add(topPosition);
+            callback.updatePosition(this, positions);
+        }
     }
 }

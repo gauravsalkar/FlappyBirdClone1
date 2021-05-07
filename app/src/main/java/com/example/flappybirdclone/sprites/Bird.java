@@ -4,7 +4,9 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 
+import com.example.flappybirdclone.GameManagerCallback;
 import com.example.flappybirdclone.R;
 
 public class Bird implements  Sprite {
@@ -16,15 +18,18 @@ public class Bird implements  Sprite {
     private float gravity;
     private float currentFallingSpeed;
     private float flappyBoost;
+    private boolean collision = false;
+    private int screenHeight;
+    private GameManagerCallback callback;
 
-
-    public Bird(Resources resources) {
+    public Bird(Resources resources, int screenHeight, GameManagerCallback callback) {
         birdX = (int)resources.getDimension(R.dimen.bird_x);
         birdWidth = (int)resources.getDimension(R.dimen.bird_width);
         birdHeight = (int)resources.getDimension(R.dimen.bird_height);
         gravity = resources.getDimension(R.dimen.gravity);
         flappyBoost = resources.getDimension(R.dimen.flappy_boost);
-
+        this.screenHeight = screenHeight;
+        this.callback = callback;
         Bitmap birdBmp = BitmapFactory.decodeResource(resources, R.drawable.bird_down);
         bird_down = Bitmap.createScaledBitmap(birdBmp, birdWidth, birdHeight, false);
         Bitmap birdBmpUp = BitmapFactory.decodeResource(resources, R.drawable.bird_up);
@@ -42,11 +47,29 @@ public class Bird implements  Sprite {
 
     @Override
     public void update() {
-        birdY += currentFallingSpeed;
-        currentFallingSpeed += gravity;
+        if(collision) {
+            if(birdY + bird_down.getHeight() < screenHeight) {
+                birdY += currentFallingSpeed;
+                currentFallingSpeed += gravity;
+            }
+        } else {
+            birdY += currentFallingSpeed;
+            currentFallingSpeed += gravity;
+            Rect birdPosition = new Rect(birdX, birdY, birdX+birdWidth, birdY+birdHeight);
+            callback.updatePosition(birdPosition);
+        }
+        //birdY += currentFallingSpeed;
+        //currentFallingSpeed += gravity;
     }
 
     public void onTouchEvent() {
-        currentFallingSpeed = flappyBoost;
+        if(!collision) {
+            currentFallingSpeed = flappyBoost;
+        }
+
+    }
+
+    public void collision() {
+        collision = true;
     }
 }
