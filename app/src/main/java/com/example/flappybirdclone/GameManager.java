@@ -12,6 +12,8 @@ import android.view.SurfaceView;
 
 import com.example.flappybirdclone.sprites.Background;
 import com.example.flappybirdclone.sprites.Bird;
+import com.example.flappybirdclone.sprites.GameMessage;
+import com.example.flappybirdclone.sprites.GameOver;
 import com.example.flappybirdclone.sprites.Obstacle;
 import com.example.flappybirdclone.sprites.ObstacleManager;
 
@@ -26,12 +28,15 @@ import java.util.Map;
 public class GameManager extends SurfaceView implements SurfaceHolder.Callback, GameManagerCallback {
 
     public MainThread thread;
-    private GameState gameState = GameState.PLAYING;
+    private GameState gameState = GameState.INITIAL;
     private Bird bird;
     private Background background;
 
     private DisplayMetrics dm;
     private ObstacleManager obstacleManager;
+    private GameOver gameOver;
+    private GameMessage gameMessage;
+
     private Rect birdPosition;
     private Map<Obstacle, List<Rect>> obstaclePositions = new HashMap<>();
 
@@ -46,9 +51,13 @@ public class GameManager extends SurfaceView implements SurfaceHolder.Callback, 
     }
 
     private void initGame() {
+        birdPosition = new Rect();
+        obstaclePositions = new HashMap<>();
         bird = new Bird(getResources(), dm.heightPixels, this);
         background = new Background(getResources(), dm.heightPixels);
         obstacleManager = new ObstacleManager(getResources(), dm.heightPixels,dm.widthPixels, this);
+        gameOver = new GameOver(getResources(), dm.heightPixels, dm.widthPixels);
+        gameMessage = new GameMessage(getResources(), dm.heightPixels, dm.widthPixels);
     }
 
     @Override
@@ -104,9 +113,14 @@ public class GameManager extends SurfaceView implements SurfaceHolder.Callback, 
                     obstacleManager.draw(canvas);
                     calculateCollision();
                     break;
+                case INITIAL:
+                    bird.draw(canvas);
+                    gameMessage.draw(canvas);
+                    break;
                 case GAME_OVER:
                     bird.draw(canvas);
                     obstacleManager.draw(canvas);
+                    gameOver.draw(canvas);
                     break;
             }
 
@@ -120,7 +134,13 @@ public class GameManager extends SurfaceView implements SurfaceHolder.Callback, 
             case PLAYING:
                 bird.onTouchEvent();
                 break;
+            case INITIAL:
+                bird.onTouchEvent();
+                gameState = GameState.PLAYING;
+                break;
             case GAME_OVER:
+                initGame();
+                gameState = GameState.INITIAL;
                 break;
         }
 
